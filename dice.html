@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Dice Roll Game</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .game-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 350px;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #0b76ef;
+  }
+  .guess-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #0b76ef;
+    color: white;
+    transition: 0.2s;
+  }
+  button:hover {
+    background: #095bb3;
+  }
+  #result {
+    font-size: 18px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  .win { color: green; }
+  .lose { color: red; }
+  footer {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #666;
+  }
+  a {
+    color: #0b76ef;
+    text-decoration: none;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎲 AI Dice Roll Game</h1>
+    <p>Guess the dice number (1–6). Can you beat the AI?</p>
+    
+    <div class="guess-options">
+      <button onclick="makeGuess(1)">1</button>
+      <button onclick="makeGuess(2)">2</button>
+      <button onclick="makeGuess(3)">3</button>
+      <button onclick="makeGuess(4)">4</button>
+      <button onclick="makeGuess(5)">5</button>
+      <button onclick="makeGuess(6)">6</button>
+    </div>
+    
+    <p id="aiRoll">AI hasn’t rolled yet.</p>
+    <p id="result"></p>
+
+    <button onclick="resetGame()" style="margin-top:15px; background:#ff9800;">Play Again</button>
+    
+    <footer>
+      <p>AI randomly picks dice rolls.<br>
+      View my AI chat history: 
+      <a href="https://chatgpt.com/share/68cac959-be40-8002-b16b-39f843fb7574" target="_blank">
+        Click here to open in ChatGPT
+      </a></p>
+    </footer>
+  </div>
+
+<script>
+let aiNumber = null;
+
+function makeGuess(playerGuess) {
+  if (aiNumber !== null) return; // Prevent multiple guesses before reset
+
+  // AI rolls dice (1–6)
+  aiNumber = Math.floor(Math.random() * 6) + 1;
+
+  document.getElementById("aiRoll").textContent = "AI rolled: " + aiNumber;
+
+  if (playerGuess === aiNumber) {
+    document.getElementById("result").textContent = "🎉 You Win! Correct Guess!";
+    document.getElementById("result").className = "win";
+  } else {
+    document.getElementById("result").textContent = "❌ You Lose! Better luck next time.";
+    document.getElementById("result").className = "lose";
+  }
+}
+
+function resetGame() {
+  aiNumber = null;
+  document.getElementById("aiRoll").textContent = "AI hasn’t rolled yet.";
+  document.getElementById("result").textContent = "";
+  document.getElementById("result").className = "";
+}
+</script>
+</body>
+</html>
