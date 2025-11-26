@@ -1,159 +1,206 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sabin Ghimire — Student Portfolio</title>
-  <meta name="description" content="Portfolio of Sabin Ghimire, Business Major at DONG-A University." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sabin Ghimire Portfolio</title>
   <style>
-    :root{--bg:#f7f9fb;--card:#ffffff;--accent:#0b66ff;--muted:#5b6b7a;--radius:12px}
-    *{box-sizing:border-box}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial;line-height:1.5;margin:0;background:linear-gradient(180deg,var(--bg),#eef4ff);color:#0f1724}
-    .container{max-width:980px;margin:36px auto;padding:24px}
-    header{display:flex;gap:16px;align-items:center}
-    .avatar{width:96px;height:96px;border-radius:14px;flex:0 0 96px;background:linear-gradient(135deg,var(--accent),#6fb3ff);display:grid;place-items:center;color:white;font-weight:700;font-size:28px}
-    h1{margin:0;font-size:28px}
-    p.lead{margin:6px 0 0;color:var(--muted)}
-    nav{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
-    .btn{background:transparent;border:1px solid rgba(11,102,255,0.12);padding:8px 12px;border-radius:10px;font-weight:600;color:var(--accent);text-decoration:none}
-    .hero-card{margin-top:18px;padding:18px;background:var(--card);border-radius:var(--radius);box-shadow:0 6px 18px rgba(11,102,255,0.06)}
-    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
-    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
-    h2{margin:0 0 12px}
-    .projects{display:grid;gap:12px}
-    .project{padding:12px;border-radius:10px;border:1px solid #eef3ff}
-    .meta{font-size:13px;color:var(--muted)}
-    ul.skills{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:0}
-    ul.skills li{background:#f1f6ff;padding:6px 10px;border-radius:999px;font-weight:600;color:var(--accent);font-size:13px}
-    footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}.avatar{width:72px;height:72px;flex:0 0 72px}}
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      margin: 0;
+      background: var(--bg);
+      color: #063;
+    }
+    header {
+      background: white;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e6eef6;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 18px auto;
+      padding: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 14px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(10,30,60,.06);
+    }
+    .controls label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+    .controls input[type=file] {
+      display: block;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    select, input, button {
+      padding: 8px;
+      border: 1px solid #cfe6f6;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: var(--accent);
+      border: 1px solid #cfe6f6;
+    }
+    .small {
+      font-size: 13px;
+      padding: 6px;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 360px;
+      border: 1px solid #e6eef6;
+      margin-top: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f0f6fb;
+      text-align: left;
+      font-size: 13px;
+    }
+    tr.anomaly {
+      background: var(--anomaly);
+    }
+    tr.selected {
+      outline: 2px solid rgba(16,111,164,.12)
+    }
+    .summary {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .summary .item {
+      background: #f0bfff;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    canvas {
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #eef7ff;
+      width: 100%;
+      height: 240px;
+    }
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+    }
+    .spinner {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: var(--accent);
+      color: white;
+      padding: 10px;
+      border-radius: 50%;
+      display: none;
+    }
+    .warning {
+      color: #a33;
+      font-weight: 700;
+    }
+    @media (max-width:900px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+      .charts{
+        grid-template-columns:1fr;
+      }
+    }
+    /* Portfolio-specific styling */
+    .project-link {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="avatar">SG</div>
-      <div>
-        <h1>Sabin Ghimire</h1>
-        <p class="lead">Business Major — DONG-A University • github.com/your-username</p>
-        <nav>
-          <a class="btn" href="#about">About</a>
-          <a class="btn" href="#projects">Projects</a>
-          <a class="btn" href="#skills">Skills</a>
-          <a class="btn" href="#contact">Contact</a>
-        </nav>
-      </div>
-    </header><section class="hero-card">
-  <strong>Welcome to my personal portfolio.</strong>
-  <p style="margin-top:8px;color:var(--muted)">I am an enthusiastic student at DONG-A University, studying Business. This site showcases my background, experiences, and skills, as well as my passion for continuous growth and global opportunities.</p>
-</section>
+  <header>
+    <h1>Sabin Ghimire</h1>
+    <p>Business Major — DONG-A University • github.com/your-username</p>
+  </header>
 
-<div class="grid">
-  <main>
-    <section id="about" class="card">
+  <div class="container">
+    <section id="about">
       <h2>About Me</h2>
-      <p class="meta">Get to know me</p>
+      <p>Get to know me</p>
       <p>My name is Sabin Ghimire. I am originally from Khotang and currently pursuing a Business major at DONG-A University. I am a very enthusiastic person who loves collaborating and learning new things.</p>
       <p>During my high school days, I actively participated in various group projects, working closely with teachers and seniors. I also completed a 6-month internship at a Nepal-based IT company, where I gained valuable experience in teamwork and problem-solving.</p>
       <p>In addition to academics, I am passionate about leadership, innovation, and exploring how technology can be applied in business contexts. I am eager to connect with like-minded individuals and contribute to projects that create meaningful impact.</p>
     </section>
 
-    <section id="projects" class="card" style="margin-top:16px">
+    <section id="projects">
       <h2>Projects & Experience</h2>
-      <div class="projects">
-        <article class="project">
-          <strong>Group Projects (High School)</strong>
-          <div class="meta">Teamwork • Collaboration</div>
-          <p>I worked on multiple group projects, collaborating with teachers and seniors, which helped me improve my communication and leadership skills.</p>
-        </article>
 
-        <article class="project">
-          <strong>Internship — Nepal IT Company</strong>
-          <div class="meta">6 Months • Practical Experience</div>
-          <p>I completed a 6-month internship at an IT company in Nepal. This gave me hands-on exposure to real-world projects, strengthened my adaptability, and showed me the importance of teamwork in achieving goals.</p>
-        </article>
+      <h3>Group Projects (High School)</h3>
+      <p>Teamwork • Collaboration</p>
+      <p>I worked on multiple group projects, collaborating with teachers and seniors, which helped me improve my communication and leadership skills.</p>
 
-        <article class="project">
-          <strong>Business Strategy Simulation</strong>
-          <div class="meta">University Coursework • Analysis & Planning</div>
-          <p>Participated in a business strategy simulation as part of my university studies, where I analyzed case studies and developed creative solutions for growth and sustainability.</p>
-        </article>
+      <h3>Internship — Nepal IT Company</h3>
+      <p>6 Months • Practical Experience</p>
+      <p>I completed a 6-month internship at an IT company in Nepal. This gave me hands-on exposure to real-world projects, strengthened my adaptability, and showed me the importance of teamwork in achieving goals.</p>
 
-        <!-- Added Links -->
-        <article class="project">
-          <strong>Python Learning (ChatGPT)</strong>
-          <div class="meta">Self Learning • AI-Assisted Coding</div>
-          <p>Access my ChatGPT-based Python learning journey: 
-            <a href="https://chatgpt.com/share/690216fc-1d80-8004-a2cc-941cdd080bb4" target="_blank" rel="noopener">View Python Learning</a>
-          </p>
-        </article>
+      <h3>Business Strategy Simulation</h3>
+      <p>University Coursework • Analysis & Planning</p>
+      <p>Participated in a business strategy simulation as part of my university studies, where I analyzed case studies and developed creative solutions for growth and sustainability.</p>
 
-        <article class="project">
-          <strong>Google Colab Project</strong>
-          <div class="meta">Practice Notebook • Python & Data</div>
-          <p>Explore my Colab project here: 
-            <a href="https://colab.research.google.com/drive/1LORp8ljp9xDG-flipWmNQ1L7VJGLpKeS?usp=drive_link" target="_blank" rel="noopener">Open Google Colab</a>
-          </p>
-        </article>
-      </div>
-    </section>
+      <h3>Python Learning (ChatGPT)</h3>
+      <p>Self Learning • AI-Assisted Coding</p>
+      <p>Access my ChatGPT-based Python learning journey:  </p>
 
-    <section id="contact" class="card" style="margin-top:16px">
-      <h2>Contact</h2>
-      <p class="meta">Ways to reach me</p>
-      <p>Email: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
-      <p>GitHub: <a href="https://github.com/your-username" target="_blank" rel="noopener">github.com/your-username</a></p>
-      <p>LinkedIn: <a href="#" target="_blank" rel="noopener">linkedin.com/in/sabinghimire</a></p>
-    </section>
-  </main>
+      <h3>Google Colab Project</h3>
+      <p>Practice Notebook • Python & Data</p>
+      <p>Explore my Colab project here:  </p>
 
-  <aside>
-    <div class="card">
-      <h2>Skills</h2>
-      <ul class="skills">
-        <li>Business Analysis</li>
-        <li>Team Collaboration</li>
-        <li>Project Management</li>
-        <li>Communication</li>
-        <li>Adaptability</li>
-        <li>Leadership</li>
-        <li>Problem-Solving</li>
-      </ul>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <h2>Course Checklist</h2>
-      <ul style="margin:0;padding-left:18px;color:var(--muted)">
-        <li>Consider information, format and style of website</li>
-        <li>Communicate with AI to generate code</li>
-        <li>Create a GitHub repo and upload code (index.html)</li>
-        <li>Activate GitHub Pages and submit your site link</li>
-        <li>Test and iterate</li>
-      </ul>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <h2>Quick Links</h2>
-      <p style="margin:0"><a class="btn" href="#projects">My Projects</a></p>
-    </div>
-  </aside>
-</div>
-
-<footer>
-  <p>Made by Sabin Ghimire — Business Major at DONG-A University | Passionate about learning, collaboration, and creating impact.</p>
-</footer>
-
-  </div>  
-  <script>
-    // Script to show initials in avatar
-    (function(){
-      try{
-        const name = 'Sabin Ghimire';
-        const initials = name.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
-        document.querySelector('.avatar').textContent = initials;
-      }catch(e){/* ignore */}
-    })();
-  </script>
-</body>
-</html>
+      <h3>Datalyzer</h3>
+      <p class="project-link">
+        <a href="data:text/html;base64,CjwhZG9jdHlwZSBodG1sPgo8aHRtbCBsYW5nPSJlbiI+CjxoZWFkPgogIDxtZXRhIGNoYXJzZXQ9InV0Zi04IiAvPgogIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lkdGgsaW5pdGlhbC1zY2FsZT0xIiAvPgogIDx0aXRsZT5Bbm9tYWx5IERldGVjdG9yIOKAlCBzaW5nbGUtZmlsZSB0b29sPC90aXRsZT4KICA8c3R5bGU+CiAgICA6cm9vdHstLWFjY2VudDojMTA2ZmE0Oy0tYW5vbWFseTojZmZkZGRkOy0tYW5vbWFseS1zdHJvbmc6I2ZmN2E3YTstLWJnOiNmN2ZiZmZ9CiAgICBib2R5e2ZvbnQtZmFtaWx5OnN5c3RlbS11aSwtYXBwbGUtc3lzdGVtLFNlZ29lIFVJLFJvYm90byxIZWx2ZXRpY2EsQXJpYWw7IG1hcmdpbjowO2JhY2tncm91bmQ6dmFyKC0tYmcpO2NvbG9yOiMwNjM7fQogICAgaGVhZGVye2JhY2tncm91bmQ6d2hpdGU7cGFkZGluZzoxNHB4IDE4cHg7Ym9yZGVyLWJvdHRvbToxcHggc29saWQgI2U2ZWVmNn0KICAgIC5jb250YWluZXJ7bWF4LXdpZHRoOjExMDBweDttYXJnaW46MThweCBhdXRvO3BhZGRpbmc6MTJweH0KICAgIGgxe21hcmdpbjowO2ZvbnQtc2l6ZToyMHB4fQogICAgLmdyaWR7ZGlzcGxheTpncmlkO2dyaWQtdGVtcGxhdGUtY29sdW1uczoxZnIgMzQwcHg7Z2FwOjE0cHh9CiAgICAuY2FyZHtiYWNrZ3JvdW5kOndoaXRlO2JvcmRlci1yYWRpdXM6MTBweDtwYWRkaW5nOjEycHg7Ym94LXNoYWRvdzowIDFweCAzcHggcmdiYSgxMCwzMCw2MCwuMDYpfQogICAgLmNvbnRyb2xzIGxhYmVse2Rpc3BsYXk6YmxvY2s7bWFyZ2luLXRvcDo4cHg7Zm9udC13ZWlnaHQ6NjAwfQogICAgLmNvbnRyb2xzIGlucHV0W3R5cGU9ZmlsZV17ZGlzcGxheTpibG9ja30KICAgIC5yb3d7ZGlzcGxheTpmbGV4O2dhcDo4cHg7YWxpZ24taXRlbXM6Y2VudGVyfQogICAgc2VsZWN0LGlucHV0LGJ1dHRvbntwYWRkaW5nOjhweDtib3JkZXI6MXB4IHNvbGlkICNjZmU2ZjY7Ym9yZGVyLXJhZGl1czo2cHg7Zm9udC1zaXplOjE0cHh9CiAgICBidXR0b257YmFja2dyb3VuZDp2YXIoLS1hY2NlbnQpO2NvbG9yOndoaXRlO2JvcmRlcjpub25lO2N1cnNvcjpwb2ludGVyfQogICAgYnV0dG9uLnNlY29uZGFyeXtiYWNrZ3JvdW5kOndoaXRlO2NvbG9yOnZhcigtLWFjY2VudCk7Ym9yZGVyOjFweCBzb2xpZCAjY2ZlNmY2fQogICAgLnNtYWxse2ZvbnQtc2l6ZToxM3B4O3BhZGRpbmc6NnB4fQogICAgLnRhYmxlLXdyYXB7b3ZlcmZsb3c6YXV0bzttYXgtaGVpZ2h0OjM2MHB4O2JvcmRlcjoxcHggc29saWQgI2U2ZWVmNjttYXJnaW4tdG9wOjEwcHh9CiAgICB0YWJsZXtib3JkZXItY29sbGFwc2U6Y29sbGFwc2U7d2lkdGg6MTAwJX0KICAgIHRoLHRke3BhZGRpbmc6NnB4IDhweDtib3JkZXItYm90dG9tOjFweCBzb2xpZCAjZjBmNmZiO3RleHQtYWxpZ246bGVmdDtmb250LXNpemU6MTNweH0KICAgIHRyLmFub21hbHl7YmFja2dyb3VuZDp2YXIoLS1hbm9tYWx5KX0KICAgIHRyLnNlbGVjdGVke291dGxpbmU6MnB4IHNvbGlkIHJnYmEoMTYsMTExLDE2NCwuMTIpfQogICAgLnN1bW1hcnl7ZGlzcGxheTpmbGV4O2dhcDoxMnB4O2ZsZXgtd3JhcDp3cmFwO21hcmdpbi10b3A6OHB4fQogICAgLnN1bW1hcnkgLml0ZW17YmFja2dyb3VuZDojZjBmYmZmO3BhZGRpbmc6OHB4O2JvcmRlci1yYWRpdXM6NnB4O2ZvbnQtc2l6ZToxM3B4fQogICAgLmNoYXJ0c3tkaXNwbGF5OmdyaWQ7Z3JpZC10ZW1wbGF0ZS1jb2x1bW5zOjFmciAxZnI7Z2FwOjEwcHg7bWFyZ2luLXRvcDoxMHB4fQogICAgY2FudmFze2JhY2tncm91bmQ6d2hpdGU7Ym9yZGVyLXJhZGl1czo2cHg7Ym9yZGVyOjFweCBzb2xpZCAjZWVmN2ZmO3dpZHRoOjEwMCU7aGVpZ2h0OjI0MHB4fQogICAgLmZvb3Rlci1hY3Rpb25ze2Rpc3BsYXk6ZmxleDtnYXA6OHB4O2ZsZXgtd3JhcDp3cmFwO21hcmdpbi10b3A6MTBweH0KICAgIC50b2dnbGV7ZGlzcGxheTppbmxpbmUtZmxleDthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjZweH0KICAgIC5ub3Rle2ZvbnQtc2l6ZToxM3B4O2NvbG9yOiM2
