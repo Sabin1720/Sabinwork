@@ -1,457 +1,234 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Anomaly Detector — single-file tool</title>
-  <style>
-    :root{--accent:#106fa4;--anomaly:#ffdddd;--anomaly-strong:#ff7a7a;--bg:#f7fbff}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0;background:var(--bg);color:#063;}
-    header{background:white;padding:14px 18px;border-bottom:1px solid #e6eef6}
-    .container{max-width:1100px;margin:18px auto;padding:12px}
-    h1{margin:0;font-size:20px}
-    .grid{display:grid;grid-template-columns:1fr 340px;gap:14px}
-    .card{background:white;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(10,30,60,.06)}
-    .controls label{display:block;margin-top:8px;font-weight:600}
-    .controls input[type=file]{display:block}
-    .row{display:flex;gap:8px;align-items:center}
-    select,input,button{padding:8px;border:1px solid #cfe6f6;border-radius:6px;font-size:14px}
-    button{background:var(--accent);color:white;border:none;cursor:pointer}
-    button.secondary{background:white;color:var(--accent);border:1px solid #cfe6f6}
-    .small{font-size:13px;padding:6px}
-    .table-wrap{overflow:auto;max-height:360px;border:1px solid #e6eef6;margin-top:10px}
-    table{border-collapse:collapse;width:100%}
-    th,td{padding:6px 8px;border-bottom:1px solid #f0f6fb;text-align:left;font-size:13px}
-    tr.anomaly{background:var(--anomaly)}
-    tr.selected{outline:2px solid rgba(16,111,164,.12)}
-    .summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-    .summary .item{background:#f0fbff;padding:8px;border-radius:6px;font-size:13px}
-    .charts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    canvas{background:white;border-radius:6px;border:1px solid #eef7ff;width:100%;height:240px}
-    .footer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .toggle{display:inline-flex;align-items:center;gap:6px}
-    .note{font-size:13px;color:#666;margin-top:6px}
-    .spinner{position:fixed;right:16px;bottom:16px;background:var(--accent);color:white;padding:10px;border-radius:50%;display:none}
-    .warning{color:#a33;font-weight:700}
-    /* responsive */
-    @media (max-width:900px){.grid{grid-template-columns:1fr;}.charts{grid-template-columns:1fr}}
-    /* README area */
-    .readme{font-size:13px;background:#fbfdff;padding:10px;border-radius:8px;border:1px dashed #d9eefc}
-    a.link{color:var(--accent)}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Anomaly Detector — Chart.js Enhanced</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--accent:#106fa4;--anomaly:#ff4c4c;--bg:#f7fbff}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0;background:var(--bg);color:#063}
+header{background:white;padding:14px 18px;border-bottom:1px solid #e6eef6}
+.container{max-width:1400px;margin:18px auto;padding:12px; display:flex; gap:12px;}
+.left-panel{flex:0 0 25%; display:flex; flex-direction:column; gap:8px;}
+.right-panel{flex:1; display:flex; flex-direction:column; gap:8px;}
+select,input,button{padding:8px;border:1px solid #cfe6f6;border-radius:6px;font-size:14px}
+button{background:var(--accent);color:white;border:none;cursor:pointer}
+button.secondary{background:white;color:var(--accent);border:1px solid #cfe6f6}
+.summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.summary .item{background:#f0fbff;padding:8px;border-radius:6px;font-size:13px}
+#chartContainer{background:white;border-radius:6px;border:1px solid #eef7ff;width:100%;height:500px; display:block;}
+.table-wrap{overflow:auto;max-height:300px;border:1px solid #e6eef6; display:none;}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 8px;border-bottom:1px solid #f0f6fb;text-align:left;font-size:13px}
+tr.anomaly{background:var(--anomaly)}
+.spinner{position:fixed;right:16px;bottom:16px;background:var(--accent);color:white;padding:10px;border-radius:50%;display:none}
+</style>
 </head>
 <body>
-  <header>
-    <div class="container"><h1>Anomaly Detector — single-file tool (anomaly_tool.html)</h1></div>
-  </header>
-  <main class="container">
-    <div class="card readme">
-      <strong>Quick usage</strong>
-      <ol>
-        <li>Upload a CSV (or JSON) using "Choose file". The tool will try to detect a header row automatically (you can override).</li>
-        <li>Pick numeric columns to analyze, choose Z-score or IQR (or both), adjust thresholds, then click "Detect anomalies".</li>
-        <li>Anomalous rows will be highlighted in the table and in charts. Use checkboxes to manually select/deselect rows.</li>
-        <li>Use "Remove anomalies" to remove detected rows from the working dataset (Undo available until refresh).</li>
-        <li>Download cleaned or anomalies CSVs with the buttons. All runs client-side — no server.</li>
-      </ol>
-      <div class="note">Example dataset included in comments. File size warning for files &gt;10MB. Keyboard-accessible controls.</div>
+<header>
+<div class="container"><h1>Anomaly Detector — Chart.js Enhanced</h1></div>
+</header>
+<main class="container">
+  <div class="left-panel">
+    <label for="file">Browse file</label>
+    <input id="file" type="file" accept=".csv,.json" />
+
+    <label for="colSelect">Choose column</label>
+    <select id="colSelect"></select>
+
+    <label for="zThreshold">Z-Score threshold</label>
+    <input id="zThreshold" type="number" value="3" step="0.1" min="0.1" />
+
+    <label for="iqrMult">IQR multiplier</label>
+    <input id="iqrMult" type="number" value="1.5" step="0.1" min="0" />
+
+    <button id="detectBtn">Detect anomalies</button>
+    <button id="showAnom" class="secondary">Show anomalies only</button>
+
+    <button id="downloadCleaned" class="small">Download cleaned CSV</button>
+    <button id="downloadAnoms" class="small secondary">Download anomalies CSV</button>
+
+    <div class="summary" aria-live="polite">
+      <div class="item">Total rows: <span id="totalRows">0</span></div>
+      <div class="item">Anomalies: <span id="numAnoms">0</span></div>
+      <div class="item">Analyzed column: <span id="analyzedCols">-</span></div>
     </div>
 
-    <div class="grid" style="margin-top:12px">
-      <div class="card">
-        <div class="controls">
-          <label for="file">Choose CSV or JSON file</label>
-          <input id="file" type="file" accept=".csv,.json,text/csv,application/json" />
-          <div class="row" style="margin-top:8px;align-items:center">
-            <label for="headerToggle">Header row detected:</label>
-            <select id="headerToggle" aria-label="Header row detection">
-              <option value="auto">Auto-detect (default)</option>
-              <option value="yes">Treat first row as header</option>
-              <option value="no">No header — use column1,column2...</option>
-            </select>
-            <div id="fileInfo" style="margin-left:auto;font-size:13px;color:#444"></div>
-          </div>
+    <label for="viewMode">View</label>
+    <select id="viewMode">
+      <option value="table">Table</option>
+      <option value="chart">Chart</option>
+    </select>
 
-          <label for="colSelect">Numeric columns to analyze (ctrl/cmd+click to multi-select)</label>
-          <select id="colSelect" multiple size="4" style="width:100%"></select>
-
-          <div class="row" style="margin-top:8px">
-            <div style="flex:1">
-              <label>Z-Score threshold (applies per selected column)</label>
-              <input id="zThreshold" type="number" value="3" step="0.1" min="0.1" />
-            </div>
-            <div style="flex:1">
-              <label>IQR multiplier</label>
-              <input id="iqrMult" type="number" value="1.5" step="0.1" min="0" />
-            </div>
-          </div>
-
-          <label for="mode">Multi-column mode</label>
-          <select id="mode">
-            <option value="any">ANY column anomalous → row marked (default)</option>
-            <option value="all">ALL selected columns must be anomalous</option>
-          </select>
-
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button id="detectBtn">Detect anomalies</button>
-            <button id="showAnom" class="secondary">Show anomalies only</button>
-            <button id="resetView" class="secondary">Show all</button>
-          </div>
-
-          <div class="summary" aria-live="polite" style="margin-top:10px">
-            <div class="item">Total rows: <span id="totalRows">0</span></div>
-            <div class="item">Anomalies: <span id="numAnoms">0</span></div>
-            <div class="item">Analyzed columns: <span id="analyzedCols">-</span></div>
-          </div>
-
-          <div class="footer-actions">
-            <button id="removeBtn" class="small">Remove anomalies</button>
-            <button id="undoBtn" class="small secondary" disabled>Undo</button>
-            <button id="downloadCleaned" class="small">Download cleaned CSV</button>
-            <button id="downloadAnoms" class="small secondary">Download anomalies CSV</button>
-          </div>
-
-          <div style="margin-top:8px">
-            <span id="msg" class="note" role="status"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="display:flex;gap:8px;align-items:center">
-          <label for="xcol">X (scatter)</label>
-          <select id="xcol"></select>
-          <label for="ycol">Y (scatter)</label>
-          <select id="ycol"></select>
-        </div>
-
-        <div class="charts">
-          <div>
-            <label>Scatter plot</label>
-            <canvas id="scatter"></canvas>
-          </div>
-          <div>
-            <label>Line chart (vs row index)</label>
-            <canvas id="line"></canvas>
-          </div>
-          <div style="grid-column:1/3;margin-top:6px">
-            <label>Histogram</label>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-              <select id="histCol"></select>
-              <button id="histBtn" class="small secondary">Draw histogram</button>
-            </div>
-            <canvas id="hist"></canvas>
-          </div>
-        </div>
-      </div>
+    <div id="chartTypeContainer" style="display:none;">
+      <label for="chartType">Chart Type</label>
+      <select id="chartType">
+        <option value="line">Line</option>
+        <option value="scatter">Scatter</option>
+        <option value="bar">Histogram</option>
+      </select>
     </div>
+  </div>
 
-    <div class="card" style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-weight:700">Data table</div>
-        <div class="row">
-          <label class="toggle"><input type="checkbox" id="selectAll" /> Select all</label>
-        </div>
-      </div>
-
-      <div class="table-wrap" id="tableWrap">
-        <table id="dataTable" aria-label="Dataset table"><thead id="thead"></thead><tbody id="tbody"></tbody></table>
-      </div>
-
+  <div class="right-panel">
+    <div id="chartContainer">
+      <canvas id="chartCanvas"></canvas>
     </div>
+    <div class="table-wrap" id="dataTableWrap">
+      <table id="dataTable">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
 
-  </main>
+<div class="spinner" id="spinner">⟳</div>
 
-  <div class="spinner" id="spinner">⟳</div>
+<script>
+// --- Utility ---
+function $(id){return document.getElementById(id);}
+function showSpinner(show){$('spinner').style.display=show?'block':'none';}
+function parseCSV(text){
+  const rows=[]; let cur=''; let row=[]; let inQuotes=false;
+  for(let i=0;i<text.length;i++){const ch=text[i]; const nxt=text[i+1];
+    if(ch==='"'){ if(inQuotes && nxt==='"'){ cur+='"'; i++; continue;} inQuotes=!inQuotes; continue;}
+    if(ch==='\r') continue;
+    if(ch===',' && !inQuotes){ row.push(cur); cur=''; continue; }
+    if(ch==='\n' && !inQuotes){ row.push(cur); rows.push(row); row=[]; cur=''; continue; }
+    cur+=ch;
+  }
+  if(cur!=='' || row.length>0){ row.push(cur); rows.push(row);}
+  return rows;
+}
+function detectHeader(rows){ if(rows.length<2) return true; const first=rows[0], second=rows[1]; let votes=0;
+  for(let i=0;i<first.length;i++){ const a=first[i].trim(); const b=(second[i]||'').trim(); if(a==='' && b!=='') votes++; else if(isNaN(Number(a)) && !isNaN(Number(b))) votes++;} return votes>0;
+}
+function rowsToObjects(rows, header){ const data=[]; for(let r=0;r<rows.length;r++){ const row=rows[r]; const obj={}; for(let c=0;c<header.length;c++){ obj[header[c]] = row[c]!==undefined? row[c] : ''; } data.push(obj);} return data; }
+function coerceRow(obj){ const out={}; for(const k in obj){ const v=obj[k]; const n=Number(v); out[k]=(!isNaN(n) && v.toString().trim()!=='')? n : v; } return out; }
+function mean(arr){return arr.reduce((s,v)=>s+v,0)/arr.length;}
+function std(arr){const m=mean(arr);return Math.sqrt(arr.reduce((s,v)=>s+(v-m)*(v-m),0)/arr.length);}
+function quantile(sorted,q){const pos=(sorted.length-1)*q; const base=Math.floor(pos); const rest=pos-base; return sorted[base+1]!==undefined ? sorted[base]+rest*(sorted[base+1]-sorted[base]) : sorted[base];}
+function computeIQRStats(arr){const sorted=arr.slice().sort((a,b)=>a-b); const q1=quantile(sorted,0.25); const q3=quantile(sorted,0.75); return {q1,q3,iqr:q3-q1};}
 
-  <script>
-  /*************************************************************************
-   * Anomaly Detector — single-file HTML + JS
-   * - Supports CSV and JSON upload
-   * - Auto-detects header row (override available)
-   * - Implements Z-score and IQR methods in plain JavaScript
-   * - Allows multi-column ANY/ALL modes
-   * - Highlights anomalies in table and charts
-   * - Remove anomalies, Undo, Download cleaned/anomalies CSVs
-   *
-   * JS Comments explain algorithms and data flow.
-   *************************************************************************/
+// --- State ---
+let originalData=[], workingData=[], anomalyFlags=[], header=[], filenameBase='dataset';
+let chartInstance=null;
 
-  // --- Utility functions -------------------------------------------------
-  function $(id){return document.getElementById(id)}
-  function showMsg(txt, isErr){const m=$('msg');m.textContent=txt; m.style.color=isErr?"#a33":"#444"}
-  function showSpinner(show){$('spinner').style.display=show? 'block':'none'}
+// --- UI ---
+const fileInput=$('file'), colSelect=$('colSelect'), zThreshold=$('zThreshold'), iqrMult=$('iqrMult');
+const detectBtn=$('detectBtn'), showAnom=$('showAnom'), downloadCleaned=$('downloadCleaned'), downloadAnoms=$('downloadAnoms');
+const totalRows=$('totalRows'), numAnoms=$('numAnoms'), analyzedCols=$('analyzedCols');
+const viewMode=$('viewMode'), chartTypeContainer=$('chartTypeContainer'), chartType=$('chartType');
+const chartCanvas=$('chartCanvas'), dataTableWrap=$('dataTableWrap'), thead=$('thead'), tbody=$('tbody');
 
-  function bytesToSize(bytes){const sizes=['Bytes','KB','MB','GB']; if(bytes==0) return '0 Byte'; const i=Math.floor(Math.log(bytes)/Math.log(1024)); return Math.round(bytes/Math.pow(1024,i)*100)/100 + ' ' + sizes[i];}
+fileInput.addEventListener('change', handleFile);
+detectBtn.addEventListener('click', detectAnomalies);
+showAnom.addEventListener('click', ()=>filterView(true));
+downloadCleaned.addEventListener('click', ()=>downloadCSV(getCleanedData(), filenameBase+'_cleaned.csv'));
+downloadAnoms.addEventListener('click', ()=>downloadCSV(getAnomaliesData(), filenameBase+'_anomalies.csv'));
+viewMode.addEventListener('change', updateRightPanel);
+chartType.addEventListener('change', renderChart);
 
-  // Basic CSV parser that handles quoted fields
-  function parseCSV(text){
-    const rows=[];
-    let cur=''; let row=[]; let inQuotes=false; for(let i=0;i<text.length;i++){const ch=text[i]; const nxt=text[i+1];
-      if(ch==='"'){
-        if(inQuotes && nxt==='"'){ cur+='"'; i++; continue; } // escaped quote
-        inQuotes = !inQuotes; continue;
-      }
-      if(ch==='\r') continue;
-      if(ch===',' && !inQuotes){ row.push(cur); cur=''; continue; }
-      if(ch==='\n' && !inQuotes){ row.push(cur); rows.push(row); row=[]; cur=''; continue; }
-      cur+=ch;
+// --- File handling ---
+function handleFile(e){
+    const file = e.target.files[0]; if(!file) return;
+    filenameBase = (file.name||'dataset').replace(/\.[^.]+$/,''); showSpinner(true);
+    const reader = new FileReader();
+    reader.onload = function(ev){
+        const text=ev.target.result;
+        try{
+            if(file.type.includes('json') || file.name.toLowerCase().endsWith('.json')){
+                loadFromJSON(JSON.parse(text));
+            } else { loadFromRows(parseCSV(text)); }
+        } catch(err){console.error('Error parsing file: '+err);}
+        finally{showSpinner(false);}
     }
-    // push last
-    if(cur!=='' || row.length>0){ row.push(cur); rows.push(row); }
-    return rows;
-  }
-
-  // Detect header row: heuristics — check first row for non-numeric or not matching numeric pattern
-  function detectHeader(rows){ if(rows.length<2) return true; const first=rows[0]; const second=rows[1];
-    // if any first row cell contains non-numeric while second is numeric, likely header
-    let headerVotes=0; for(let i=0;i<first.length;i++){ const a=first[i].trim(); const b=(second[i]||'').trim(); if(a==='') headerVotes++; if(isNaN(Number(a)) && !isNaN(Number(b))) headerVotes++; }
-    return headerVotes>0;
-  }
-
-  // Convert rows array to objects given header array
-  function rowsToObjects(rows, header){ const data=[]; for(let r=0;r<rows.length;r++){ const row=rows[r]; const obj={}; for(let c=0;c<header.length;c++){ obj[header[c]] = row[c]!==undefined? row[c] : ''; } data.push(obj);} return data; }
-
-  // Try to coerce values: numeric when possible, otherwise keep string
-  function coerceRow(obj){ const out={}; for(const k in obj){ const v = obj[k]; if(v==null || v==='') { out[k]=v; continue;} const n = Number(v); if(!Number.isNaN(n) && v.toString().trim()!=='') out[k]=n; else out[k]=v; } return out; }
-
-  // --- Statistical helpers -----------------------------------------------
-  function mean(arr){ if(arr.length===0) return NaN; let s=0; for(const v of arr) s+=v; return s/arr.length; }
-  function std(arr){ const m=mean(arr); let s=0; for(const v of arr) s+= (v-m)*(v-m); return Math.sqrt(s/arr.length); }
-
-  // Get quantiles (q between 0 and 1)
-  function quantile(sorted, q){ if(sorted.length===0) return NaN; const pos = (sorted.length-1)*q; const base=Math.floor(pos); const rest=pos-base; if(sorted[base+1]!==undefined) return sorted[base] + rest*(sorted[base+1]-sorted[base]); else return sorted[base]; }
-
-  // IQR method: for a numeric array compute Q1, Q3, IQR
-  function computeIQRStats(arr){ const sorted=arr.slice().sort((a,b)=>a-b); const q1=quantile(sorted, 0.25); const q3=quantile(sorted, 0.75); const iqr=q3-q1; return {q1,q3,iqr}; }
-
-  // Z-score: z = (x - mean)/std
-  // IQR bounds: lower = Q1 - multiplier*IQR; upper = Q3 + multiplier*IQR
-
-  // --- State -------------------------------------------------------------
-  let originalData = []; // array of objects (coerced) — full original
-  let workingData = [];  // may have rows removed
-  let anomalyFlags = []; // boolean per workingData index
-  let removedRows = [];  // stash for undo
-  let header = [];
-  let filenameBase = 'dataset';
-
-  // --- UI wiring --------------------------------------------------------
-  const fileInput = $('file'); const headerToggle = $('headerToggle'); const colSelect = $('colSelect');
-  const xcol = $('xcol'), ycol = $('ycol'), histCol = $('histCol');
-  const zThreshold = $('zThreshold'), iqrMult = $('iqrMult');
-  const detectBtn = $('detectBtn'), showAnom = $('showAnom'), resetView = $('resetView');
-  const tbody = $('tbody'), thead = $('thead'); const totalRows = $('totalRows'), numAnoms = $('numAnoms'), analyzedCols = $('analyzedCols');
-  const removeBtn = $('removeBtn'), undoBtn = $('undoBtn'); const downloadCleaned = $('downloadCleaned'), downloadAnoms = $('downloadAnoms');
-  const selectAll = $('selectAll'); const histBtn = $('histBtn'); const showAllBtn = $('resetView');
-
-  fileInput.addEventListener('change', handleFile);
-  detectBtn.addEventListener('click', detectAnomalies);
-  showAnom.addEventListener('click', ()=>filterView('anoms'));
-  showAllBtn.addEventListener('click', ()=>filterView('all'));
-  removeBtn.addEventListener('click', removeAnomalies);
-  undoBtn.addEventListener('click', undoRemoval);
-  downloadCleaned.addEventListener('click', ()=>downloadCSV(getCleanedData(), filenameBase + '_cleaned.csv'));
-  downloadAnoms.addEventListener('click', ()=>downloadCSV(getAnomaliesData(), filenameBase + '_anomalies.csv'));
-  selectAll.addEventListener('change', toggleSelectAll);
-  histBtn.addEventListener('click', drawHistogram);
-
-  // helper to update selects for numeric columns
-  function updateColumnSelectors(){ const numericCols = getNumericColumns(originalData);
-    // clear
-    [colSelect, xcol, ycol, histCol].forEach(s=>{s.innerHTML='';});
-    for(const c of header){ const opt=document.createElement('option'); opt.value=c; opt.textContent=c; colSelect.appendChild(opt);
-      const opt2=opt.cloneNode(true); xcol.appendChild(opt2);
-      const opt3=opt.cloneNode(true); ycol.appendChild(opt3);
-      const opt4=opt.cloneNode(true); histCol.appendChild(opt4);
-    }
-    // preselect numeric ones in colSelect
-    for(let i=0;i<colSelect.options.length;i++){ const name=colSelect.options[i].value; if(numericCols.includes(name)) colSelect.options[i].selected=true; }
-  }
-
-  function getNumericColumns(data){ if(data.length===0) return []; const sample=data[0]; const cols=[]; for(const k of Object.keys(sample)){ let allNum=true; for(const r of data){ const v=r[k]; if(v==='') { allNum=false; break;} if(typeof v!=='number'){ allNum=false; break;} } if(allNum) cols.push(k); } return cols; }
-
-  // --- File handling ----------------------------------------------------
-  function handleFile(e){ const file = e.target.files[0]; if(!file) return; filenameBase = (file.name||'dataset').replace(/\.[^.]+$/,''); showSpinner(true); showMsg('Loading file...');
-    if(file.size>10*1024*1024){ showMsg('Warning: file is large ('+bytesToSize(file.size)+'). Attempting to process but may be slow.', true); }
-    const reader = new FileReader(); reader.onload = function(ev){ const text = ev.target.result; try{ if(file.type.includes('json') || file.name.toLowerCase().endsWith('.json')){ const parsed = JSON.parse(text); loadFromJSON(parsed); } else { const rows = parseCSV(text); loadFromRows(rows); } }catch(err){ showMsg('Error parsing file: ' + err.message, true); console.error(err);} finally{ showSpinner(false);} }; reader.onerror=function(){ showSpinner(false); showMsg('Error reading file', true); }
     reader.readAsText(file);
-  }
+}
 
-  function loadFromJSON(obj){ // expect array of objects
-    if(!Array.isArray(obj)){ showMsg('Unsupported JSON format: expected array of objects', true); return; }
-    originalData = obj.map(o=>coerceRow(o)); workingData = originalData.slice(); header = Object.keys(originalData[0]||{}); anomalyFlags = new Array(workingData.length).fill(false); removedRows=[]; updateUIAfterLoad(); }
+function loadFromJSON(obj){ if(!Array.isArray(obj)) return; originalData=obj.map(coerceRow); workingData=originalData.slice(); header=Object.keys(originalData[0]||{}); anomalyFlags=new Array(workingData.length).fill(false); updateUI(); }
+function loadFromRows(rows){ if(rows.length===0) return;
+    let hasHeader = detectHeader(rows);
+    if(hasHeader){ header=rows[0].map(h=>h.toString()); originalData=rowsToObjects(rows.slice(1),header).map(coerceRow); }
+    else { header=[]; for(let i=0;i<rows[0].length;i++) header.push('col'+(i+1)); originalData=rowsToObjects(rows,header).map(coerceRow);}
+    workingData=originalData.slice(); anomalyFlags=new Array(workingData.length).fill(false); updateUI();
+}
 
-  function loadFromRows(rows){ if(rows.length===0){ showMsg('No rows found', true); return; }
-    // Trim empty trailing rows
-    while(rows.length>0 && rows[rows.length-1].every(c=>c==='')) rows.pop();
-    // determine header
-    let useHeader = headerToggle.value; // 'auto'|'yes'|'no'
-    let hasHeader = true;
-    if(useHeader==='auto') hasHeader = detectHeader(rows);
-    else hasHeader = (useHeader==='yes');
+function updateUI(){ colSelect.innerHTML=''; header.forEach(h=>{const opt=document.createElement('option'); opt.value=h; opt.textContent=h; colSelect.appendChild(opt);}); renderTable(); totalRows.textContent=workingData.length; numAnoms.textContent='0'; analyzedCols.textContent='-'; }
 
-    if(hasHeader){ header = rows[0].map(h=>h===undefined||h===''? '': h.toString()); const dataRows = rows.slice(1); originalData = rowsToObjects(dataRows, header).map(coerceRow); }
-    else{
-      const cols = rows[0].length; header = []; for(let i=0;i<cols;i++) header.push('col'+(i+1)); originalData = rowsToObjects(rows, header).map(coerceRow);
-    }
-    workingData = originalData.slice(); anomalyFlags = new Array(workingData.length).fill(false); removedRows=[]; updateUIAfterLoad(); showMsg('Loaded '+workingData.length+' rows.'); }
+// --- Detection ---
+function detectAnomalies(){
+    if(workingData.length===0) return;
+    const col = colSelect.value; if(!col) return;
+    const zT=Number(zThreshold.value)||3; const iqrM=Number(iqrMult.value)||1.5;
+    const vals = workingData.map(r=>Number(r[col])).filter(v=>!isNaN(v));
+    if(vals.length===0) return;
+    const m=mean(vals), s=std(vals), {q1,q3,iqr}=computeIQRStats(vals);
+    anomalyFlags=workingData.map(r=>{
+        const v=Number(r[col]);
+        if(isNaN(v)) return false;
+        let zFlag=Math.abs((v-m)/s)>zT, iqrFlag=v<q1-iqrM*iqr||v>q3+iqrM*iqr;
+        return zFlag||iqrFlag;
+    });
+    updateSummary(col);
+    renderTable(); renderChart();
+}
 
-  function updateUIAfterLoad(){ updateColumnSelectors(); renderTable(); totalRows.textContent = workingData.length; numAnoms.textContent = '0'; analyzedCols.textContent='-'; undoBtn.disabled = true; }
+function updateSummary(col){ totalRows.textContent=workingData.length; numAnoms.textContent=anomalyFlags.filter(Boolean).length; analyzedCols.textContent=col; }
 
-  // --- Detection --------------------------------------------------------
-  function detectAnomalies(){ if(workingData.length===0){ showMsg('No data loaded', true); return; }
-    const selected = Array.from(colSelect.selectedOptions).map(o=>o.value);
-    if(selected.length===0){ showMsg('No columns selected', true); return; }
-    // check numeric
-    const numeric = getNumericColumns(workingData);
-    const nonNumericSelected = selected.filter(s=>!numeric.includes(s));
-    if(nonNumericSelected.length>0){ showMsg('Selected columns must be numeric: ' + nonNumericSelected.join(', '), true); return; }
-
-    const zT = Number(zThreshold.value) || 3; const iqrM = Number(iqrMult.value) || 1.5; const mode = $('mode').value; showSpinner(true); showMsg('Detecting anomalies...'); setTimeout(()=>{
-      // For each selected column compute z-scores and IQR bounds
-      const perColStats = {};
-      for(const col of selected){ const vals = workingData.map(r=>Number(r[col])).filter(v=>!Number.isNaN(v)); const m = mean(vals); const s = std(vals); const {q1,q3,iqr} = computeIQRStats(vals); perColStats[col] = {m,s,q1,q3,iqr}; }
-
-      // mark anomalies per row per column
-      const perRowColumnFlag = workingData.map(_=> ({}));
-      for(let i=0;i<workingData.length;i++){
-        for(const col of selected){ const v = Number(workingData[i][col]); if(Number.isNaN(v)){ perRowColumnFlag[i][col]=false; continue; }
-          // Z-score check
-          const {m,s,q1,q3,iqr} = perColStats[col]; let zFlag=false, iqrFlag=false;
-          if(s>0){ const z = (v - m)/s; if(Math.abs(z) > zT) zFlag = true; }
-          // IQR bounds
-          const lower = q1 - iqrM*iqr; const upper = q3 + iqrM*iqr; if(v < lower || v > upper) iqrFlag = true;
-          // We consider a value anomalous if either method (Z or IQR) flags it. The user sees combined effect.
-          perRowColumnFlag[i][col] = zFlag || iqrFlag;
-        }
-      }
-
-      // Combine across columns based on mode
-      anomalyFlags = perRowColumnFlag.map(flags=>{ const vals = Object.values(flags); if(vals.length===0) return false; if(mode==='any') return vals.some(Boolean); return vals.every(Boolean); });
-
-      // update view
-      renderTable(); updateSummary(selected, anomalyFlags);
-      renderAllCharts(); showSpinner(false); showMsg('Detection complete.');
-    }, 50);
-  }
-
-  function updateSummary(selectedCols, flags){ totalRows.textContent = workingData.length; const n = flags.filter(Boolean).length; numAnoms.textContent = n; analyzedCols.textContent = selectedCols.join(', '); }
-
-  // --- Table rendering -------------------------------------------------
-  function renderTable(filterMode){ thead.innerHTML=''; tbody.innerHTML='';
-    // build header
-    const tr = document.createElement('tr'); const thSel=document.createElement('th'); thSel.textContent=''; tr.appendChild(thSel);
-    for(const h of header){ const th=document.createElement('th'); th.textContent=h; tr.appendChild(th); } thead.appendChild(tr);
-
-    // rows
+// --- Table ---
+function renderTable(showOnlyAnoms=false){
+    thead.innerHTML=''; tbody.innerHTML='';
+    const tr=document.createElement('tr'); header.forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);}); thead.appendChild(tr);
     for(let i=0;i<workingData.length;i++){
-      // filter
-      if(filterMode==='anoms' && !anomalyFlags[i]) continue;
-      const row = workingData[i]; const trr = document.createElement('tr'); if(anomalyFlags[i]) trr.classList.add('anomaly');
-      const tdSel=document.createElement('td'); const chk=document.createElement('input'); chk.type='checkbox'; chk.dataset.idx=i; chk.className='rowCheck'; chk.addEventListener('change', ()=>{ if(chk.checked) trr.classList.add('selected'); else trr.classList.remove('selected'); }); tdSel.appendChild(chk); trr.appendChild(tdSel);
-      for(const h of header){ const td=document.createElement('td'); td.textContent = (row[h]===undefined||row[h]===null)?'':row[h]; trr.appendChild(td); }
-      tbody.appendChild(trr);
+        if(showOnlyAnoms && !anomalyFlags[i]) continue;
+        const row=workingData[i]; const trr=document.createElement('tr'); if(anomalyFlags[i]) trr.classList.add('anomaly');
+        for(const h of header){ const td=document.createElement('td'); td.textContent=row[h]; trr.appendChild(td);}
+        tbody.appendChild(trr);
     }
-    // wire keyboard selection
-    attachRowKeyboard();
-  }
+}
 
-  function attachRowKeyboard(){ // allow row checkbox toggling via keyboard: focusable rows
-    const checks = document.querySelectorAll('.rowCheck'); checks.forEach((c,i)=>{ c.tabIndex=0; }); }
+// --- View ---
+function filterView(showOnly){ renderTable(showOnly); if(viewMode.value==='chart') renderChart();}
+function updateRightPanel(){
+    if(viewMode.value==='chart'){ dataTableWrap.style.display='none'; chartCanvas.parentElement.style.display='block'; chartTypeContainer.style.display='block'; renderChart();}
+    else { chartCanvas.parentElement.style.display='none'; chartTypeContainer.style.display='none'; dataTableWrap.style.display='block'; renderTable();}
+}
 
-  function filterView(mode){ if(mode==='anoms'){ renderTable('anoms'); } else renderTable(); }
+// --- Chart.js ---
+function renderChart(){
+    const col=colSelect.value;
+    const vals = workingData.map((r,i)=>({v:Number(r[col]),i})).filter(o=>!isNaN(o.v));
+    if(vals.length===0) { if(chartInstance) chartInstance.destroy(); return; }
 
-  // --- Charts -----------------------------------------------------------
-  function clearCanvas(c){ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); }
-  function setDpi(canvas){ const ratio = window.devicePixelRatio||1; const w = canvas.clientWidth; const h = canvas.clientHeight; canvas.width = Math.floor(w*ratio); canvas.height = Math.floor(h*ratio); const ctx = canvas.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); }
+    const labels=vals.map(o=>o.i+1);
+    const dataVals=vals.map(o=>o.v);
+    const anomalyPoints=vals.map((o,i)=>anomalyFlags[o.i] ? o.v : null);
 
-  function renderScatter(){ const c=$('scatter'); setDpi(c); clearCanvas(c); const ctx=c.getContext('2d'); const xName=xcol.value, yName=ycol.value; if(!xName||!yName){ ctx.font='12px serif'; ctx.fillText('Select X and Y numeric columns',10,20); return; }
-    // collect numeric points
-    const pts=[]; for(let i=0;i<workingData.length;i++){ const x=Number(workingData[i][xName]); const y=Number(workingData[i][yName]); if(Number.isFinite(x) && Number.isFinite(y)) pts.push({x,y,i}); }
-    if(pts.length===0){ ctx.font='12px serif'; ctx.fillText('No numeric points to plot',10,20); return; }
-    // compute bounds
-    const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y); const xmin=Math.min(...xs), xmax=Math.max(...xs), ymin=Math.min(...ys), ymax=Math.max(...ys);
-    const padX=(xmax-xmin)*0.08||1; const padY=(ymax-ymin)*0.08||1; const W=c.clientWidth, H=c.clientHeight; const margin=28;
-    function sx(v){ return margin + ( (v - xmin) / (xmax - xmin + padX*2) ) * (W - margin*2); }
-    function sy(v){ return H - (margin + ( (v - ymin) / (ymax - ymin + padY*2) ) * (H - margin*2) ); }
-    // axes
-    ctx.strokeStyle='#ddd'; ctx.beginPath(); ctx.moveTo(margin,margin); ctx.lineTo(margin,H-margin); ctx.lineTo(W-margin,H-margin); ctx.stroke();
-    // points
-    for(const p of pts){ const isA = anomalyFlags[p.i]; ctx.beginPath(); ctx.fillStyle = isA? 'red':'#106fa4'; ctx.arc(sx(p.x), sy(p.y), isA?4:2.5, 0, Math.PI*2); ctx.fill(); }
-  }
+    const chartData={labels:labels,datasets:[]};
+    const type=chartType.value;
 
-  function renderLine(){ const c=$('line'); setDpi(c); clearCanvas(c); const ctx=c.getContext('2d'); const yName=ycol.value; if(!yName){ ctx.font='12px serif'; ctx.fillText('Select a numeric column for Y',10,20); return; }
-    const pts=[]; for(let i=0;i<workingData.length;i++){ const y=Number(workingData[i][yName]); if(Number.isFinite(y)) pts.push({y,i}); else pts.push({y:NaN,i}); }
-    const ys=pts.map(p=>p.y).filter(v=>Number.isFinite(v)); if(ys.length===0){ ctx.font='12px serif'; ctx.fillText('No numeric data to plot',10,20); return; }
-    const ymin=Math.min(...ys), ymax=Math.max(...ys); const W=c.clientWidth, H=c.clientHeight; const margin=28;
-    function sx(idx){ return margin + idx * ( (W - margin*2) / Math.max(1, pts.length-1) ); }
-    function sy(v){ return H - (margin + ((v - ymin) / (ymax - ymin || 1)) * (H - margin*2)); }
-    // line
-    ctx.beginPath(); ctx.strokeStyle='#106fa4'; ctx.lineWidth=1.2; let started=false; for(let i=0;i<pts.length;i++){ const v=pts[i].y; if(!Number.isFinite(v)){ started=false; continue;} const x=sx(i), y=sy(v); if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y); } ctx.stroke();
-    // points
-    for(const p of pts){ if(!Number.isFinite(p.y)) continue; const x=sx(p.i), y=sy(p.y); const isA=anomalyFlags[p.i]; ctx.beginPath(); ctx.fillStyle=isA? 'red':'#0b5c82'; ctx.arc(x,y, isA?4:2.5,0,Math.PI*2); ctx.fill(); }
-  }
-
-  function drawHistogram(){ const col = histCol.value; const c=$('hist'); setDpi(c); clearCanvas(c); const ctx=c.getContext('2d'); if(!col){ ctx.font='12px serif'; ctx.fillText('Select column',10,20); return; }
-    const vals = workingData.map((r,i)=>({v:Number(r[col]),i})).filter(o=>Number.isFinite(o.v)); if(vals.length===0){ ctx.font='12px serif'; ctx.fillText('No numeric data',10,20); return; }
-    const nBins = Math.min(30, Math.ceil(Math.sqrt(vals.length))); const vs = vals.map(o=>o.v); const minV=Math.min(...vs), maxV=Math.max(...vs); const binW=(maxV-minV)/nBins||1; const bins = new Array(nBins).fill(0); const binIdxs = new Array(nBins).fill(null).map(()=>[]);
-    for(const o of vals){ const idx = Math.min(nBins-1, Math.floor((o.v - minV)/binW)); bins[idx]++; binIdxs[idx].push(o.i); }
-    const W=c.clientWidth, H=c.clientHeight, margin=28; const maxCount=Math.max(...bins);
-    // draw bars
-    for(let b=0;b<nBins;b++){ const bw = (W - margin*2)/nBins; const h = (bins[b]/maxCount)*(H - margin*2); const x = margin + b*bw; const y = H - margin - h; ctx.fillStyle='#bfe4f7'; ctx.fillRect(x,y,bw-2,h); // highlight anomalies inside bin
-      // if any bin contains anomalous points, overlay a red stripe
-      if(binIdxs[b].some(idx=>anomalyFlags[idx])){ ctx.fillStyle='rgba(255,80,80,0.6)'; ctx.fillRect(x,y,bw-2,h); }
+    if(type==='line'){
+        chartData.datasets.push({label:col,data:dataVals,borderColor:'#106fa4',backgroundColor:'rgba(16,111,164,0.2)',pointRadius:3});
+        chartData.datasets.push({label:'Anomalies',data:anomalyPoints,type:'scatter',pointBackgroundColor:'#ff4c4c',pointRadius:6});
+    } else if(type==='scatter'){
+        chartData.datasets.push({label:col,data:vals.map(o=>({x:o.i+1,y:o.v})),backgroundColor:'#106fa4'});
+        chartData.datasets.push({label:'Anomalies',data:vals.filter((o,i)=>anomalyFlags[o.i]).map(o=>({x:o.i+1,y:o.v})),backgroundColor:'#ff4c4c'});
+    } else if(type==='bar'){ // histogram
+        chartData.datasets.push({label:col,data:dataVals,backgroundColor:vals.map((o,i)=>anomalyFlags[o.i]?'#ff4c4c':'#106fa4')});
     }
-  }
 
-  function renderAllCharts(){ renderScatter(); renderLine(); drawHistogram(); }
+    const cfg={type:type==='scatter'?'scatter':type,data:chartData,options:{responsive:true,plugins:{legend:{display:true}},scales:{x:{title:{display:true,text:'Index'}},y:{title:{display:true,text:col}}}}};
+    if(chartInstance) chartInstance.destroy();
+    chartInstance=new Chart(chartCanvas,cfg);
+}
 
-  // --- Cleaning and export ----------------------------------------------
-  function getAnomaliesData(){ const rows=[]; for(let i=0;i<workingData.length;i++) if(anomalyFlags[i]) rows.push(workingData[i]); return rows; }
-  function getCleanedData(){ const rows=[]; for(let i=0;i<workingData.length;i++) if(!anomalyFlags[i]) rows.push(workingData[i]); return rows; }
-
-  function removeAnomalies(){ const toRemove = []; for(let i=workingData.length-1;i>=0;i--){ if(anomalyFlags[i]){ toRemove.push({idx:i,row:workingData.splice(i,1)[0],flag:anomalyFlags.splice(i,1)[0]}); } }
-    if(toRemove.length===0){ showMsg('No anomalies to remove', true); return; }
-    removedRows = toRemove; undoBtn.disabled=false; renderTable(); renderAllCharts(); showMsg('Removed '+toRemove.length+' rows. Undo available.'); totalRows.textContent = workingData.length; numAnoms.textContent = anomalyFlags.filter(Boolean).length;
-  }
-
-  function undoRemoval(){ if(removedRows.length===0) return; // restore in original positions
-    // sort by index ascending and splice back
-    removedRows.sort((a,b)=>a.idx-b.idx);
-    for(const it of removedRows){ workingData.splice(it.idx,0,it.row); anomalyFlags.splice(it.idx,0,it.flag); }
-    removedRows=[]; undoBtn.disabled=true; renderTable(); renderAllCharts(); showMsg('Undo complete.'); totalRows.textContent = workingData.length; numAnoms.textContent = anomalyFlags.filter(Boolean).length;
-  }
-
-  function downloadCSV(rows, fname){ if(!rows || rows.length===0){ showMsg('No rows to download', true); return; }
-    const cols = header; const lines = [cols.join(',')]; for(const r of rows){ const line = cols.map(c=>{
-        const v = r[c]===undefined||r[c]===null? '': r[c].toString(); // escape quotes
-        if(v.includes(',')||v.includes('"')||v.includes('\n')) return '"'+v.replace(/"/g,'""')+'"'; return v; }).join(','); lines.push(line); }
-    const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showMsg('Download started: '+fname);
-  }
-
-  // --- Helpers for downloads and selection ------------------------------
-  function toggleSelectAll(e){ const checks = document.querySelectorAll('.rowCheck'); checks.forEach(c=>c.checked = e.target.checked); }
-
-  // --- Initialization with sample dataset for quick testing ------------
-  (function prefillExample(){ const sample = `id,timestamp,temperature,humidity\n1,2025-01-01T00:00:00Z,22.5,45\n2,2025-01-01T01:00:00Z,23.0,46\n3,2025-01-01T02:00:00Z,120.0,44\n4,2025-01-01T03:00:00Z,22.8,47`;
-    const rows = parseCSV(sample); loadFromRows(rows); })();
-
-  // Expose a few functions to console for debugging
-  window._anomalyTool = { originalData, workingData, anomalyFlags, detectAnomalies };
-
-  // Keyboard accessible: Enter on Detect button
-  detectBtn.addEventListener('keyup', (e)=>{ if(e.key==='Enter') detectAnomalies(); });
-
-  // When x/y/hist selects change, re-render charts for convenience
-  [xcol,ycol,histCol].forEach(s=>s.addEventListener('change', renderAllCharts));
-
-  // When header override changed, allow reloading file by user reselecting file (simple UX)
-  headerToggle.addEventListener('change', ()=> showMsg('Header detection mode changed. If you already loaded a file, re-upload to re-interpret header.'));
-
-  // Accessibility: focus order tweaks
-  document.addEventListener('keydown', (e)=>{ if(e.key==='/' && e.target===document.body){ e.preventDefault(); fileInput.focus(); } });
-
-  </script>
+// --- Cleaning & Export ---
+function getAnomaliesData(){ return workingData.filter((_,i)=>anomalyFlags[i]); }
+function getCleanedData(){ return workingData.filter((_,i)=>!anomalyFlags[i]); }
+function downloadCSV(rows,fname){if(!rows||rows.length===0) return; const lines=[header.join(',')]; rows.forEach(r=>{ const line=header.map(c=>{const v=r[c]===undefined||r[c]===null?'':r[c].toString(); return v.includes(',')||v.includes('"')||v.includes('\n')?'"'+v.replace(/"/g,'""')+'"':v; }).join(','); lines.push(line);}); const blob=new Blob([lines.join('\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; a.click();}
+</script>
 </body>
 </html>
