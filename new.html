@@ -1,98 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Dice Roll Game</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dice Duel – Mobile Game Style</title>
+
 <style>
-  body { 
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+  :root {
+    --bg: #0f172a;
+    --card: #111827;
+    --primary: #3b82f6;
+    --win: #22c55e;
+    --lose: #ef4444;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at top, #1e293b, #020617);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    color: var(--text);
   }
-  .game-container {
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0px 6px 25px rgba(0,0,0,0.15);
-    text-align: center;
+
+  .game {
     width: 360px;
+    background: linear-gradient(180deg, #020617, #020617);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
   }
+
   h1 {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #0b76ef;
+    margin: 0 0 6px;
+    font-size: 22px;
+    text-align: center;
   }
-  .guess-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin: 15px 0;
-  }
-  button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    background: #0b76ef;
-    color: white;
-    transition: 0.2s;
-    font-size: 16px;
-  }
-  button:hover {
-    background: #095bb3;
-  }
-  #aiRoll {
-    font-size: 18px;
-    margin-top: 10px;
-    font-weight: bold;
-  }
-  #result {
-    font-size: 20px;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  .win { color: green; }
-  .lose { color: red; }
-  .scoreboard {
-    margin-top: 15px;
-    font-size: 16px;
-    background: #f1f5f9;
-    padding: 10px;
-    border-radius: 10px;
-  }
-  .rolling {
-    animation: shake 0.5s infinite;
-  }
-  @keyframes shake {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(10deg); }
-    50% { transform: rotate(-10deg); }
-    75% { transform: rotate(10deg); }
-    100% { transform: rotate(0deg); }
-  }
-  footer {
-    margin-top: 25px;
+
+  .status {
+    text-align: center;
     font-size: 13px;
-    color: #666;
+    color: var(--muted);
+    min-height: 18px;
+    margin-bottom: 14px;
   }
-  a {
-    color: #0b76ef;
-    text-decoration: none;
-    font-weight: bold;
+
+  .dice-container {
+    display: flex;
+    justify-content: center;
+    margin: 18px 0 24px;
+  }
+
+  .dice {
+    width: 110px;
+    height: 110px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #1f2933, #020617);
+    box-shadow:
+      inset -6px -6px 12px rgba(0,0,0,.6),
+      inset 6px 6px 12px rgba(255,255,255,.05),
+      0 18px 40px rgba(0,0,0,.8);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 14px;
+  }
+
+  .pip {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    opacity: 0;
+  }
+
+  .show { opacity: 1; }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  button {
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .12s ease, filter .12s ease;
+  }
+
+  button:active { transform: scale(.95); }
+  button:disabled { filter: grayscale(1) brightness(.7); }
+
+  .result {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    min-height: 22px;
+  }
+
+  .win { color: var(--win); }
+  .lose { color: var(--lose); }
+
+  .footer {
+    margin-top: 18px;
+    font-size: 11px;
+    text-align: center;
+    color: var(--muted);
   }
 </style>
 </head>
 <body>
-  <div class="game-container">
-    <h1>🎲 AI Dice Roll Game</h1>
-    <p>Guess the dice number (1–6). Can you beat the AI?</p>
-    
-    <div class="guess-options">
-      <b
+
+<div class="game">
+  <h1>🎲 Dice Duel</h1>
+  <div class="status" id="status">Pick a number</div>
+
+  <div class="dice-container">
+    <div class="dice" id="dice">
+      <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+      <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+      <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+    </div>
+  </div>
+
+  <div class="buttons" id="buttons">
+    <button onclick="play(1)">1</button>
+    <button onclick="play(2)">2</button>
+    <button onclick="play(3)">3</button>
+    <button onclick="play(4)">4</button>
+    <button onclick="play(5)">5</button>
+    <button onclick="play(6)">6</button>
+  </div>
+
+  <div class="result" id="result"></div>
+  <div class="footer">Mobile‑style dice game · Fair adaptive AI</div>
+</div>
+
+<script>
+  const dice = document.getElementById("dice");
+  const pips = [...dice.children];
+  const status = document.getElementById("status");
+  const result = document.getElementById("result");
+  const buttons = document.getElementById("buttons").children;
+
+  let history = [];
+  let busy = false;
+
+  const faces = {
+    1: [4],
+    2: [0,8],
+    3: [0,4,8],
+    4: [0,2,6,8],
+    5: [0,2,4,6,8],
+    6: [0,2,3,5,6,8]
+  };
+
+  function renderFace(n) {
+    pips.forEach(p => p.classList.remove("show"));
+    faces[n].forEach(i => pips[i].classList.add("show"));
+  }
+
+  function aiRoll() {
+    if (history.length < 3) return Math.floor(Math.random() * 6) + 1;
+    const freq = [0,0,0,0,0,0];
+    history.forEach(h => freq[h - 1]++);
+    const guess = freq.indexOf(Math.max(...freq)) + 1;
+    return Math.random() < 0.45 ? guess : Math.floor(Math.random() * 6) + 1;
+  }
+
+  function play(player) {
+    if (busy) return;
+    busy = true;
+    [...buttons].forEach(b => b.disabled = true);
+
+    history.push(player);
+    if (history.length > 8) history.shift();
+
+    status.textContent = "AI thinking…";
+    result.textContent = "";
+
+    let rolls = 0;
+    const rollAnim = setInterval(() => {
+      renderFace(Math.floor(Math.random() * 6) + 1);
+      rolls++;
+      if (rolls > 12) {
+        clearInterval(rollAnim);
+        const ai = aiRoll();
+        renderFace(ai);
+        status.textContent = "AI rolled";
+
+        if (ai === player) {
+          result.textContent = "You Win";
+          result.className = "result win";
+        } else {
+          result.textContent = "You Lose";
+          result.className = "result lose";
+        }
+
+        busy = false;
+        [...buttons].forEach(b => b.disabled = false);
+      }
+    }, 80);
+  }
+</script>
+
+</body>
+</html>
